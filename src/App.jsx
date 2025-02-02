@@ -9,7 +9,8 @@ function App() {
     password: "",
   });
   const [isAuth, setIsAuth] = useState(false);
-  const [productList, setProductList] = useState({});
+  const [productList, setProductList] = useState([]);
+  const [oneProduct, setOneProduct] = useState({});
   const handleInput = (e) => {
     const { name, value } = e.target;
     setUser((prevUser) => ({
@@ -44,12 +45,30 @@ function App() {
   const getOneProduct = async (id) => {
     const res = await axios.get(`${BASE_URL}/api/${API_BASE}/product/${id}`);
     console.log(res);
+    setOneProduct(res.data.product);
+  };
+  const checkAuth = async () => {
+    try {
+      const res = await axios.post(`${BASE_URL}/api/user/check`);
+      alert("驗證成功");
+    } catch (error) {
+      alert("驗證失敗", error);
+    }
   };
 
   return (
     <>
       {isAuth ? (
         <>
+          <button
+            type="button"
+            className="btn btn-success"
+            onClick={() => {
+              checkAuth();
+            }}
+          >
+            驗證登入
+          </button>
           <div className="row">
             <div className="col">
               <table className="table ">
@@ -74,7 +93,9 @@ function App() {
                           <button
                             type="button"
                             className="btn btn-primary"
-                            onClick={getOneProduct(item.id)}
+                            onClick={() => {
+                              getOneProduct(item.id);
+                            }}
                           >
                             查看細節
                           </button>
@@ -85,15 +106,32 @@ function App() {
                 </tbody>
               </table>
             </div>
+
             <div className="col">
-              <div className="card-img-top" alt="..." />
+              <h2>單一產品細節</h2>
+              <img
+                src={oneProduct.imageUrl}
+                className="card-img-top"
+                alt="..."
+              />
               <div className="card-body">
-                <h5 className="card-title">Card title</h5>
+                <h5 className="card-title">{oneProduct.title}</h5>
+                <p className="card-text">商品描述：{oneProduct.description}</p>
+                <p>商品內容：{oneProduct.content}</p>
                 <p className="card-text">
-                  Some quick example text to build on the card title and make up
-                  the bulk of the card's content.
+                  <del>{oneProduct.origin_price} 元</del> / {oneProduct.price}元
                 </p>
               </div>
+            </div>
+            <h5>更多圖片：</h5>
+            <div className="row">
+              {oneProduct.imagesUrl?.map((item, index) => {
+                return (
+                  <div key={index} className="col-4">
+                    <img src={item} alt="" className="img-fluid w-100" />
+                  </div>
+                );
+              })}
             </div>
           </div>
         </>
